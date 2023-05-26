@@ -43,7 +43,7 @@ echo "Install rustup"
 $rust_url = 'https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe'
 Start-BitsTransfer -Source $rust_url -Destination $download 
 $rust_installerPath = Join-Path ($download) ([System.IO.Path]::GetFileName($rust_url) );
-Start-Process $rust_installerPath -ArgumentList '--default-host x86_64-pc-windows-msvc --profile minimal -y' -Wait
+Start-Process $rust_installerPath -ArgumentList '--default-host x86_64-pc-windows-msvc --profile complete -y' -Wait
 
 
 #vcpkg
