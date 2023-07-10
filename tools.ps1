@@ -27,7 +27,7 @@ New-Item -ItemType Directory -Force -Path $libdir
 
 #git
 echo "Install Git"
-$git_url = 'https://github.com/git-for-windows/git/releases/download/v2.40.0.windows.1/Git-2.40.0-64-bit.exe'
+$git_url = 'https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.1/Git-2.41.0-64-bit.exe'
 Start-BitsTransfer -Source $git_url -Destination $download 
 $git_installerPath = Join-Path ($download) ([System.IO.Path]::GetFileName($git_url) );
 Start-Process $git_installerPath -ArgumentList '/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"' -Wait
@@ -44,7 +44,6 @@ $rust_url = 'https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rus
 Start-BitsTransfer -Source $rust_url -Destination $download 
 $rust_installerPath = Join-Path ($download) ([System.IO.Path]::GetFileName($rust_url) );
 Start-Process $rust_installerPath -ArgumentList '--default-host x86_64-pc-windows-msvc --profile complete -y' -Wait
-
 
 #vcpkg
 echo "Install vcpkg"
@@ -71,7 +70,7 @@ Start-Process $llvm_installerPath /S
 
 #Flutter 
 echo "Install flutter"
-$flutter_url = 'https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.10.1-stable.zip'
+$flutter_url = 'https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.10.5-stable.zip'
 Start-BitsTransfer -Source $flutter_url -Destination $download 
 $flutter_source = Join-Path ($download) ([System.IO.Path]::GetFileName($flutter_url) );
 Expand-Archive -Path $flutter_source -DestinationPath $buildir -Force
@@ -88,7 +87,7 @@ Add-Path (Join-Path ($flutter_dest) ('bin'))
 
 #python
 echo "Install Python"
-$python_url = 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-amd64.exe'
+$python_url = 'https://www.python.org/ftp/python/3.11.4/python-3.11.4-amd64.exe'
 Start-BitsTransfer -Source $python_url -Destination $download 
 $python_installerPath = Join-Path ($download) ([System.IO.Path]::GetFileName($python_url) );
 Start-Process $python_installerPath -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait
