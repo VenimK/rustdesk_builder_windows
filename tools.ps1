@@ -49,7 +49,7 @@ Start-Process $rust_installerPath -ArgumentList '--default-host x86_64-pc-window
 echo "Install vcpkg"
 # git clone https://github.com/microsoft/vcpkg --quiet
 # cd vcpkg
-# git checkout 2021.12.01 --quiet
+# git checkout --quiet
 # cd ..
 # vcpkg/bootstrap-vcpkg.bat
 # [System.Environment]::SetEnvironmentVariable(‘VCPKG_ROOT’,(Join-Path ($buildir) ('vcpkg')),"Machine");
@@ -70,7 +70,7 @@ Start-Process $llvm_installerPath /S
 
 #Flutter 
 echo "Install flutter"
-$flutter_url = 'https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.10.5-stable.zip'
+$flutter_url = 'https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.19.6-stable.zip'
 Start-BitsTransfer -Source $flutter_url -Destination $download 
 $flutter_source = Join-Path ($download) ([System.IO.Path]::GetFileName($flutter_url) );
 Expand-Archive -Path $flutter_source -DestinationPath $buildir -Force
