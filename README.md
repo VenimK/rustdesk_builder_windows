@@ -6,5 +6,5 @@ The process is splitted in two: first installing the toolchain (tools.ps1), seco
 
 I've tested this on a Laptop with Win11 >Version 21H2.
 
-On The First RUn you 'll get a Rustdesk Installer
+On The First RUN you 'll get a Rustdesk Installer
 On The Second RUN you 'll get a portable version
