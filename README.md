@@ -77,7 +77,7 @@ This `README.md` covers everything needed to set up the environment, run the scr
 
 
 
-        <code>C:\myapp\build.py (1 occurrence)
+        C:\myapp\build.py (1 occurrence)
             Line 16: hbb_name = 'myapp' + ('.exe' if windows else '')
         C:\myapp\Cargo.toml (6 occurrences)
             Line 2: name = "myapp"
@@ -119,7 +119,4 @@ This `README.md` covers everything needed to set up the environment, run the scr
             Line 2: Name=MyApp
         C:\myapp\res\rustdesk.service (1 occurrence)
             Line 2: Description=MyApp
-        </code>
-    </pre>
-</body>
-</html>
+        
