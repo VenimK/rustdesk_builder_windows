@@ -76,39 +76,7 @@ This `README.md` covers everything needed to set up the environment, run the scr
 
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Summary</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            background-color: #f4f4f4;
-            margin: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        code {
-            background-color: #eee;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        pre {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 5px;
-            overflow: auto;
-        }
-    </style>
-</head>
-<body>
-    <h1>Code Summary for "myapp"</h1>
-    <pre>
+
         <code>C:\myapp\build.py (1 occurrence)
             Line 16: hbb_name = 'myapp' + ('.exe' if windows else '')
         C:\myapp\Cargo.toml (6 occurrences)
