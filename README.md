@@ -73,3 +73,50 @@ The output of the build process will be a RustDesk installer for Windows. The fi
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
 This `README.md` covers everything needed to set up the environment, run the scripts, customize the build, and troubleshoot potential issues. It also includes references to the necessary prerequisites and resources for resolving issues with `winget`.
+
+
+
+JUST A NOTE
+
+C:\myapp\build.py (1 occurrence)
+    Line 16: hbb_name = 'myapp' + ('.exe' if windows else '')
+C:\myapp\Cargo.toml (6 occurrences)
+    Line 2: name = "myapp"
+    Line 8: default-run = "myapp"
+    Line 166: ProductName = "MyApp"
+    Line 168: OriginalFilename = "myapp.exe"
+    Line 183: name = "MyApp"
+    Line 184: identifier = "com.mycompany.myapp"
+C:\myapp\flutter\lib\models\native_model.dart (6 occurrences)
+    Line 35:   late MyappImpl _ffiBind;
+    Line 44:   MyappImpl get ffiBind => _ffiBind;
+    Line 132:       _ffiBind = MyappImpl(dylib);
+    Line 225:   void _startListenEvent(MyappImpl myappImpl) {
+    Line 228:     var sink = myappImpl.startGlobalEventStream(appType: appType);
+C:\myapp\flutter\lib\models\platform_model.dart (1 occurrence)
+    Line 8: MyappImpl get bind => platformFFI.ffiBind;
+C:\myapp\flutter\lib\models\web_model.dart (3 occurrences)
+    Line 21:   final MyappImpl _ffiBind = MyappImpl();
+    Line 35:   MyappImpl get ffiBind => _ffiBind;
+C:\myapp\flutter\lib\web\bridge.dart (1 occurrence)
+    Line 44: class MyappImpl {
+C:\myapp\flutter\windows\CMakeLists.txt (1 occurrence)
+    Line 7: set(BINARY_NAME "myapp")
+C:\myapp\flutter\windows\runner\main.cpp (1 occurrence)
+    Line 42:   std::wstring app_name = L"MyApp";
+C:\myapp\flutter\windows\runner\Runner.rc (2 occurrences)
+    Line 95:             VALUE "InternalName", "myapp" "\0"
+    Line 97:             VALUE "OriginalFilename", "myapp.exe" "\0"
+C:\myapp\libs\hbb_common\src\config.rs (1 occurrence)
+    Line 65:     pub static ref APP_NAME: RwLock<String> = RwLock::new("MyApp".to_owned());
+C:\myapp\libs\portable\Cargo.toml (2 occurrences)
+    Line 19: ProductName = "MyApp"
+    Line 20: OriginalFilename = "myapp.exe"
+C:\myapp\libs\portable\generate.py (1 occurrence)
+    Line 89:         options.executable = 'myapp.exe'
+C:\myapp\libs\portable\src\main.rs (1 occurrence)
+    Line 12: const APP_PREFIX: &str = "myapp";
+C:\myapp\res\rustdesk.desktop (1 occurrence)
+    Line 2: Name=MyApp
+C:\myapp\res\rustdesk.service (1 occurrence)
+    Line 2: Description=MyApp
