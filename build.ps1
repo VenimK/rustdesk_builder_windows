@@ -28,5 +28,5 @@ flutter_rust_bridge_codegen --rust-input ./src/flutter_ffi.rs --dart-output ./fl
 cd (Join-Path ($buildir)('rustdesk'))
 Remove-Item –path flutter\build –recurse
 # Thx CH4RG3MENT
-python.exe build.py --portable <#--hwcodec#> --flutter --feature IddDriver hwcodec
-#python.exe build.py --portable --hwcodec --flutter --feature IddDriver /Build 1.3.0
+python.exe build.py --portable <#--hwcodec#> --flutter --feature IddDriver hwcodec #1.3.X
+#python.exe build.py --portable --hwcodec --flutter --feature IddDriver /Build 1.2.X
