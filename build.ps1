@@ -11,10 +11,14 @@ $FLUTTER_RUST_BRIDGE_VERSION= "1.80.1"
 # [System.Environment]::SetEnvironmentVariable(‘RENDEZVOUS_SERVER’,'<<yourownserver>>',"Machine");
 
 cd $buildir
-echo "Checkout code"
-git clone https://github.com/rustdesk/rustdesk.git --quiet
+##################Disable after 1st BUILD#################
+#echo "Checkout code"
+#git clone https://github.com/rustdesk/rustdesk.git --quiet
+#################################################################
 cd rustdesk
-git reset --hard $buildcommit 
+##################Disable after 1st BUILD#################
+#git reset --hard $buildcommit 
+#################################################################
 
 New-Item -ItemType SymbolicLink -Path (Join-Path ($buildir)('rustdesk\res\icon.ico')) -Target (Join-Path ($buildir)('rustdesk\flutter/windows/runner/resources/app_icon.ico')) -Force
 
