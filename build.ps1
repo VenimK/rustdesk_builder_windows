@@ -12,12 +12,12 @@ $FLUTTER_RUST_BRIDGE_VERSION= "1.80.1"
 
 cd $buildir
 ##################Disable after 1st BUILD#################
-#echo "Checkout code"
-#git clone https://github.com/rustdesk/rustdesk.git --quiet
+echo "Checkout code"
+git clone https://github.com/rustdesk/rustdesk.git --quiet
 #################################################################
 cd rustdesk
 ##################Disable after 1st BUILD#################
-#git reset --hard $buildcommit 
+git reset --hard $buildcommit 
 #################################################################
 
 New-Item -ItemType SymbolicLink -Path (Join-Path ($buildir)('rustdesk\res\icon.ico')) -Target (Join-Path ($buildir)('rustdesk\flutter/windows/runner/resources/app_icon.ico')) -Force
@@ -32,5 +32,5 @@ flutter_rust_bridge_codegen --rust-input ./src/flutter_ffi.rs --dart-output ./fl
 cd (Join-Path ($buildir)('rustdesk'))
 Remove-Item –path flutter\build –recurse
 # Thx CH4RG3MENT
-python.exe build.py --portable <#--hwcodec#> --flutter --feature IddDriver hwcodec #1.3.X
-#python.exe build.py --portable --hwcodec --flutter --feature IddDriver /Build 1.2.X
+python.exe build.py --portable --flutter --feature IddDriver hwcodec #1.3.X
+#python.exe build.py --portable --hwcodec --flutter --feature IddDriver #1.2.X
