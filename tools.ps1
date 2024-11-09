@@ -47,14 +47,14 @@ Start-Process $rust_installerPath -ArgumentList '--default-host x86_64-pc-window
 
 #vcpkg
 echo "Install vcpkg"
-# git clone https://github.com/microsoft/vcpkg --quiet
-# cd vcpkg
-# git checkout --quiet
-# cd ..
-# vcpkg/bootstrap-vcpkg.bat
-# [System.Environment]::SetEnvironmentVariable(‘VCPKG_ROOT’,(Join-Path ($buildir) ('vcpkg')),"Machine");
-# Reload-Env;
-# vcpkg/vcpkg install libvpx:x64-windows-static libyuv:x64-windows-static opus:x64-windows-static
+git clone https://github.com/microsoft/vcpkg --quiet
+cd vcpkg
+git checkout --quiet
+cd ..
+vcpkg/bootstrap-vcpkg.bat
+[System.Environment]::SetEnvironmentVariable(‘VCPKG_ROOT’,(Join-Path ($buildir) ('vcpkg')),"Machine");
+Reload-Env;
+vcpkg/vcpkg install libvpx:x64-windows-static libyuv:x64-windows-static opus:x64-windows-static
 
 cd $libdir
 git clone https://github.com/Kingtous/rustdesk_thirdpary_lib --depth=1  --quiet
