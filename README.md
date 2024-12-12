@@ -18,8 +18,20 @@ Before you begin, ensure you have the following installed on your system:
 
 ## Repository Contents
 
-- **`tools.ps1`**: This script installs the necessary toolchain and dependencies required for building the RustDesk installer.
-- **`build.ps1`**: This script handles the actual building process, allowing you to compile a specific version of RustDesk or use a different repository.
+- **`tools.ps1`**: This script installs the necessary toolchain and dependencies:
+  - Git (v2.41.0)
+  - Visual Studio 2022 Build Tools
+  - Rust (x86_64-pc-windows-msvc)
+  - VCPKG with required libraries
+  - LLVM (v15.0.6)
+  - Flutter (v3.19.6)
+  - Python (v3.11.4)
+
+- **`build.ps1`**: This script handles the actual building process with the following configurations:
+  - Flutter version: 3.19.6
+  - Flutter Rust Bridge version: 1.80.1
+  - Support for both RustDesk 1.2.X and 1.3.X build formats
+  - Optional custom settings for `RS_PUB_KEY` and `RENDEZVOUS_SERVER`
 
 ## Usage
 
@@ -36,87 +48,51 @@ Before you begin, ensure you have the following installed on your system:
 ### Step 2: Build the RustDesk Installer
 
 1. **Run `build.ps1`**:
-   - By default, this script is configured to build RustDesk version 1.2.6. However, you can modify the script to build a different version or use a different repository (explained below).
-
    ```powershell
    .\build.ps1
    ```
 
-2. **Modify the Version or Repository** (Optional):
-   - **To build a different version of RustDesk**:
-     - Open `build.ps1` in a text editor.
-     - Locate the following section and change `v1.2.6` to your desired version tag:
-       ```powershell
-       git checkout v1.2.6
-       ```
-   - **To use a different GitHub repository**:
-     - Replace the original repository URL with your desired repository URL in the `git clone` command:
-       ```powershell
-       git clone https://github.com/rustdesk/rustdesk.git
-       cd rustdesk
-       git checkout v1.2.6
-       ```
+2. **Custom Settings** (Optional):
+   - To use custom settings, uncomment and modify these lines in `build.ps1`:
+     ```powershell
+     # [System.Environment]::SetEnvironmentVariable('RS_PUB_KEY','<<key>>',"Machine");
+     # [System.Environment]::SetEnvironmentVariable('RENDEZVOUS_SERVER','<<yourownserver>>',"Machine");
+     ```
 
-3. **Run the Script Again**:
-   - If you made changes to the script, save it and run the `build.ps1` script again to compile your custom version of RustDesk.
+3. **Build Options**:
+   - For RustDesk 1.3.X:
+     ```powershell
+     python.exe build.py --portable --flutter --feature IddDriver hwcodec
+     ```
+   - For RustDesk 1.2.X:
+     ```powershell
+     python.exe build.py --portable --hwcodec --flutter --feature IddDriver
+     ```
 
 ### Output
 
-The output of the build process will be a RustDesk installer for Windows. The first run of the script creates the standard installer, and the second run generates a portable version of RustDesk.
+The build process will create:
+1. First run: Standard RustDesk installer
+2. Second run: Portable version of RustDesk
+
+## Directory Structure
+
+The scripts use the following directory structure:
+- `C:\download`: Temporary directory for downloaded files
+- `C:\buildrustdesk`: Main build directory
+- `C:\libs`: Directory for additional libraries
 
 ## Troubleshooting
 
-- **Winget Issues**: If you encounter any issues with `winget`, such as it not displaying help or not being recognized, please refer to the official [Winget Troubleshooting Guide](https://github.com/microsoft/winget-cli/blob/d68a1a69346e7ca16a5d07eef38a2c93172eb991/doc/troubleshooting/README.md#executing-winget-doesnt-display-help).
+1. **Environment Variables**: If you encounter path-related issues, ensure you've reopened PowerShell after running `tools.ps1`.
+
+2. **Build Errors**: 
+   - Ensure all dependencies are properly installed
+   - Check if the correct Flutter version (3.19.6) is being used
+   - Verify that VCPKG_ROOT and LIBCLANG_PATH are correctly set
+
+3. **Winget Issues**: For winget-related problems, refer to the [Winget Troubleshooting Guide](https://github.com/microsoft/winget-cli/blob/d68a1a69346e7ca16a5d07eef38a2c93172eb991/doc/troubleshooting/README.md#executing-winget-doesnt-display-help).
 
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
-
-This `README.md` covers everything needed to set up the environment, run the scripts, customize the build, and troubleshoot potential issues. It also includes references to the necessary prerequisites and resources for resolving issues with `winget`.
-
-
-
-
-        C:\myapp\build.py (1 occurrence)
-            Line 16: hbb_name = 'myapp' + ('.exe' if windows else '')
-        C:\myapp\Cargo.toml (6 occurrences)
-            Line 2: name = "myapp"
-            Line 8: default-run = "myapp"
-            Line 166: ProductName = "MyApp"
-            Line 168: OriginalFilename = "myapp.exe"
-            Line 183: name = "MyApp"
-            Line 184: identifier = "com.mycompany.myapp"
-        C:\myapp\flutter\lib\models\native_model.dart (6 occurrences)
-            Line 35:   late MyappImpl _ffiBind;
-            Line 44:   MyappImpl get ffiBind => _ffiBind;
-            Line 132:       _ffiBind = MyappImpl(dylib);
-            Line 225:   void _startListenEvent(MyappImpl myappImpl) {
-            Line 228:     var sink = myappImpl.startGlobalEventStream(appType: appType);
-        C:\myapp\flutter\lib\models\platform_model.dart (1 occurrence)
-            Line 8: MyappImpl get bind => platformFFI.ffiBind;
-        C:\myapp\flutter\lib\models\web_model.dart (3 occurrences)
-            Line 21:   final MyappImpl _ffiBind = MyappImpl();
-            Line 35:   MyappImpl get ffiBind => _ffiBind;
-        C:\myapp\flutter\lib\web\bridge.dart (1 occurrence)
-            Line 44: class MyappImpl {
-        C:\myapp\flutter\windows\CMakeLists.txt (1 occurrence)
-            Line 7: set(BINARY_NAME "myapp")
-        C:\myapp\flutter\windows\runner\main.cpp (1 occurrence)
-            Line 42:   std::wstring app_name = L"MyApp";
-        C:\myapp\flutter\windows\runner\Runner.rc (2 occurrences)
-            Line 95:             VALUE "InternalName", "myapp" "\0"
-            Line 97:             VALUE "OriginalFilename", "myapp.exe" "\0"
-        C:\myapp\libs\hbb_common\src\config.rs (1 occurrence)
-            Line 65:     pub static ref APP_NAME: RwLock<String> = RwLock::new("MyApp".to_owned());
-        C:\myapp\libs\portable\Cargo.toml (2 occurrences)
-            Line 19: ProductName = "MyApp"
-            Line 20: OriginalFilename = "myapp.exe"
-        C:\myapp\libs\portable\generate.py (1 occurrence)
-            Line 89:         options.executable = 'myapp.exe'
-        C:\myapp\libs\portable\src\main.rs (1 occurrence)
-            Line 12: const APP_PREFIX: &str = "myapp";
-        C:\myapp\res\rustdesk.desktop (1 occurrence)
-            Line 2: Name=MyApp
-        C:\myapp\res\rustdesk.service (1 occurrence)
-            Line 2: Description=MyApp
-        
