@@ -52,13 +52,13 @@ cd vcpkg
 git checkout --quiet
 cd ..
 vcpkg/bootstrap-vcpkg.bat
-[System.Environment]::SetEnvironmentVariable(‘VCPKG_ROOT’,(Join-Path ($buildir) ('vcpkg')),"Machine");
+[System.Environment]::SetEnvironmentVariable("VCPKG_ROOT",(Join-Path ($buildir) ('vcpkg')),"Machine");
 Reload-Env;
 vcpkg/vcpkg install libvpx:x64-windows-static libyuv:x64-windows-static opus:x64-windows-static
 
 cd $libdir
 git clone https://github.com/Kingtous/rustdesk_thirdpary_lib --depth=1  --quiet
-[System.Environment]::SetEnvironmentVariable(‘VCPKG_ROOT’,(Join-Path ($libdir) ('rustdesk_thirdpary_lib\vcpkg')),"Machine");
+[System.Environment]::SetEnvironmentVariable("VCPKG_ROOT",(Join-Path ($libdir) ('rustdesk_thirdpary_lib\vcpkg')),"Machine");
 
 #LLVM
 echo "Install LLVM"
@@ -66,7 +66,7 @@ $llvm_url = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0
 Start-BitsTransfer -Source $llvm_url -Destination $download 
 $llvm_installerPath = Join-Path ($download) ([System.IO.Path]::GetFileName($llvm_url) );
 Start-Process $llvm_installerPath /S 
-[System.Environment]::SetEnvironmentVariable(‘LIBCLANG_PATH’,'C:\Program Files\LLVM\bin',"Machine");
+[System.Environment]::SetEnvironmentVariable("LIBCLANG_PATH",'C:\Program Files\LLVM\bin',"Machine");
 
 #Flutter 
 echo "Install flutter"
