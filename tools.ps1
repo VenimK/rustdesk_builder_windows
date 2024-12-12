@@ -34,16 +34,21 @@ Start-Process $git_installerPath -ArgumentList '/VERYSILENT /NORESTART /NOCANCEL
 Add-Path 'C:\Program Files\Git\bin'
 Reload-Env;
 
-#buildtools
-echo "Install buildtools"
-winget install --accept-source-agreements --accept-package-agreements -e --id Microsoft.VisualStudio.2022.BuildTools --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools;includeRecommended"
+# Install Rust and required components
+Write-Host "Installing Rust..."
+Invoke-WebRequest -Uri https://win.rustup.rs/x86_64 -OutFile "$download\rustup-init.exe"
+Start-Process -FilePath "$download\rustup-init.exe" -ArgumentList "-y" -Wait
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+rustup target add x86_64-pc-windows-msvc
+rustup component add clippy rustfmt
 
-#rust-up
-echo "Install rustup"
-$rust_url = 'https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe'
-Start-BitsTransfer -Source $rust_url -Destination $download 
-$rust_installerPath = Join-Path ($download) ([System.IO.Path]::GetFileName($rust_url) );
-Start-Process $rust_installerPath -ArgumentList '--default-host x86_64-pc-windows-msvc --profile complete -y' -Wait
+# Install LLVM
+Write-Host "Installing LLVM..."
+winget install LLVM.LLVM
+
+# Install Visual Studio Build Tools
+Write-Host "Installing Visual Studio Build Tools..."
+winget install Microsoft.VisualStudio.2022.BuildTools --silent --override "--wait --quiet --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
 
 #vcpkg
 echo "Install vcpkg"
@@ -58,9 +63,6 @@ $vcpkgPath = Join-Path $libdir 'vcpkg'
 Reload-Env;
 
 $vcpkgExe = Join-Path $vcpkgPath 'vcpkg.exe'
-
-Write-Host "Installing LLVM..."
-winget install LLVM.LLVM
 
 Write-Host "Installing vcpkg packages..."
 $vcpkgPackages = @(
@@ -89,6 +91,15 @@ Write-Host "Running vcpkg integrate install..."
 [System.Environment]::SetEnvironmentVariable("VCPKG_ROOT", $vcpkgPath, "Machine")
 [System.Environment]::SetEnvironmentVariable("RUSTFLAGS", "-C target-feature=+crt-static", "Machine")
 [System.Environment]::SetEnvironmentVariable("VCPKG_DEFAULT_TRIPLET", "x64-windows-static", "Machine")
+[System.Environment]::SetEnvironmentVariable("LIBCLANG_PATH", "C:\Program Files\LLVM\bin", "Machine")
+[System.Environment]::SetEnvironmentVariable("CARGO_REGISTRIES_CRATES_IO_PROTOCOL", "sparse", "Machine")
+
+# Install Chocolatey and required packages
+Write-Host "Installing Chocolatey..."
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+choco install ninja cmake -y
 
 # Reload environment variables
 Reload-Env

@@ -64,10 +64,17 @@ $env:VCPKG_ROOT = "C:\libs\vcpkg"
 $env:RUSTFLAGS = "-C target-feature=+crt-static"
 $env:VCPKG_DEFAULT_TRIPLET = "x64-windows-static"
 $env:LIBCLANG_PATH = "C:\Program Files\LLVM\bin"
+$env:CARGO_REGISTRIES_CRATES_IO_PROTOCOL = "sparse"
+$env:CMAKE_GENERATOR = "Ninja"
+
+# Ensure we're using the correct Rust toolchain
+rustup default stable
+rustup target add x86_64-pc-windows-msvc
 
 # Build the application
 Write-Host "Building RustDesk..."
-python.exe build.py --portable --flutter --hwcodec
+# Try building without hwcodec first to get a working build
+python.exe build.py --portable --flutter
 
 # Only proceed with file operations if build succeeded
 if ($LASTEXITCODE -eq 0) {
