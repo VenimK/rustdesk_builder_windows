@@ -56,7 +56,29 @@ $vcpkgPath = Join-Path $libdir 'vcpkg'
 & "$vcpkgPath/bootstrap-vcpkg.bat"
 [System.Environment]::SetEnvironmentVariable("VCPKG_ROOT",$vcpkgPath,"Machine");
 Reload-Env;
-& "$vcpkgPath/vcpkg" install libvpx:x64-windows-static libyuv:x64-windows-static opus:x64-windows-static
+
+$vcpkgExe = Join-Path $vcpkgPath 'vcpkg.exe'
+
+Write-Host "Installing vcpkg packages..."
+$vcpkgPackages = @(
+    "libvpx:x64-windows-static",
+    "libyuv:x64-windows-static",
+    "opus:x64-windows-static",
+    "ffmpeg[core,avcodec,avformat,swscale,swresample]:x64-windows-static",
+    "mediasdk:x64-windows-static"
+)
+
+foreach ($package in $vcpkgPackages) {
+    Write-Host "Installing $package..."
+    & $vcpkgExe install $package
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to install $package"
+        exit 1
+    }
+}
+
+Write-Host "Running vcpkg integrate install..."
+& $vcpkgExe integrate install
 
 cd $libdir
 git clone https://github.com/Kingtous/rustdesk_thirdpary_lib --depth=1  --quiet

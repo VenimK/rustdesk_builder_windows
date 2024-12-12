@@ -27,7 +27,11 @@ Invoke-WebRequest -Uri $sciterUrl -OutFile (Join-Path $download 'sciter.dll')
 
 # Move sciter.dll to the source directory
 Write-Host "Moving sciter.dll to the rustdesk source map"
-Move-Item -Path (Join-Path $download 'sciter.dll') -Destination (Join-Path $buildir 'rustdesk')
+$destPath = Join-Path $buildir 'rustdesk\sciter.dll'
+if (Test-Path $destPath) {
+    Remove-Item -Path $destPath -Force
+}
+Move-Item -Path (Join-Path $download 'sciter.dll') -Destination $destPath -Force
 
 New-Item -ItemType SymbolicLink -Path (Join-Path ($buildir)('rustdesk\res\icon.ico')) -Target (Join-Path ($buildir)('rustdesk\flutter/windows/runner/resources/app_icon.ico')) -Force
 
@@ -46,8 +50,66 @@ $mainRSContent = Get-Content $mainRSPath -Raw
 $updatedMainRSContent = $mainRSContent -replace 'let bytes = std::include_bytes\("..\\sciter.dll"\);', 'let bytes = std::include_bytes!("../sciter.dll");'
 Set-Content -Path $mainRSPath -Value $updatedMainRSContent
 
+# Download and extract USB MMIDD driver
+Write-Host "Downloading USB MMIDD driver"
+$mmidd_url = "https://github.com/rustdesk-org/rdev/releases/download/usbmmidd_v2/usbmmidd_v2.zip"
+Invoke-WebRequest -Uri $mmidd_url -OutFile (Join-Path $download 'usbmmidd_v2.zip')
+Expand-Archive -Path (Join-Path $download 'usbmmidd_v2.zip') -DestinationPath $buildir -Force
+
 cd (Join-Path ($buildir)('rustdesk'))
-Remove-Item –path flutter\build –recurse
-# Thx CH4RG3MENT
-python.exe build.py --portable --flutter --feature IddDriver hwcodec #1.3.X
-#python.exe build.py --portable --hwcodec --flutter --feature IddDriver #1.2.X
+Remove-Item -Path "flutter\build" -Recurse -ErrorAction SilentlyContinue
+
+# Set environment variables
+$env:VCPKG_ROOT = "C:\libs\vcpkg"
+
+# Build the application
+Write-Host "Building RustDesk..."
+python.exe build.py --portable --hwcodec --flutter --vram
+
+# Only proceed with file operations if build succeeded
+if ($LASTEXITCODE -eq 0) {
+    # Clean up and organize files
+    $releasePath = Join-Path $buildir 'rustdesk\flutter\build\windows\x64\runner\Release'
+    $usbmmiddPath = Join-Path $buildir 'usbmmidd_v2'
+    $rustdeskPath = Join-Path $buildir 'rustdesk'
+
+    if (Test-Path $releasePath) {
+        Write-Host "Moving Release folder..."
+        if (Test-Path (Join-Path $rustdeskPath 'Release')) {
+            Remove-Item -Path (Join-Path $rustdeskPath 'Release') -Recurse -Force
+        }
+        Move-Item -Path $releasePath -Destination $rustdeskPath -Force
+    } else {
+        Write-Host "Warning: Release folder not found at $releasePath"
+        Write-Host "Build might have failed. Please check if all dependencies are installed:"
+        Write-Host "- libvpx"
+        Write-Host "- libyuv"
+        Write-Host "- opus"
+        Write-Host "- ffmpeg[core,avcodec,avformat,swscale,swresample]"
+    }
+
+    if (Test-Path $usbmmiddPath) {
+        Write-Host "Moving USB MMIDD files..."
+        Remove-Item -Path (Join-Path $usbmmiddPath 'Win32') -Recurse -ErrorAction SilentlyContinue
+        $filesToRemove = @(
+            "deviceinstaller64.exe",
+            "deviceinstaller.exe",
+            "usbmmidd.bat"
+        )
+        foreach ($file in $filesToRemove) {
+            Remove-Item -Path (Join-Path $usbmmiddPath $file) -ErrorAction SilentlyContinue
+        }
+        
+        $targetUsbmmiddPath = Join-Path $rustdeskPath 'usbmmidd_v2'
+        if (Test-Path $targetUsbmmiddPath) {
+            Remove-Item -Path $targetUsbmmiddPath -Recurse -Force
+        }
+        Move-Item -Path $usbmmiddPath -Destination $rustdeskPath -Force
+    } else {
+        Write-Host "Warning: USB MMIDD folder not found at $usbmmiddPath"
+    }
+} else {
+    Write-Host "Build failed. Please check the error messages above."
+    Write-Host "Make sure all dependencies are properly installed using tools.ps1"
+    exit 1
+}
