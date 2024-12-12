@@ -61,10 +61,13 @@ Remove-Item -Path "flutter\build" -Recurse -ErrorAction SilentlyContinue
 
 # Set environment variables
 $env:VCPKG_ROOT = "C:\libs\vcpkg"
+$env:RUSTFLAGS = "-C target-feature=+crt-static"
+$env:VCPKG_DEFAULT_TRIPLET = "x64-windows-static"
+$env:LIBCLANG_PATH = "C:\Program Files\LLVM\bin"
 
 # Build the application
 Write-Host "Building RustDesk..."
-python.exe build.py --portable --flutter --vram
+python.exe build.py --portable --flutter --hwcodec
 
 # Only proceed with file operations if build succeeded
 if ($LASTEXITCODE -eq 0) {

@@ -59,11 +59,17 @@ Reload-Env;
 
 $vcpkgExe = Join-Path $vcpkgPath 'vcpkg.exe'
 
+Write-Host "Installing LLVM..."
+winget install LLVM.LLVM
+
 Write-Host "Installing vcpkg packages..."
 $vcpkgPackages = @(
     "libvpx:x64-windows-static",
     "libyuv:x64-windows-static",
     "opus:x64-windows-static",
+    "aom:x64-windows-static",
+    "libwebp:x64-windows-static",
+    "brotli:x64-windows-static",
     "ffmpeg[core,avcodec,avformat,swscale,swresample]:x64-windows-static"
 )
 
@@ -79,17 +85,17 @@ foreach ($package in $vcpkgPackages) {
 Write-Host "Running vcpkg integrate install..."
 & $vcpkgExe integrate install
 
+# Set environment variables for build
+[System.Environment]::SetEnvironmentVariable("VCPKG_ROOT", $vcpkgPath, "Machine")
+[System.Environment]::SetEnvironmentVariable("RUSTFLAGS", "-C target-feature=+crt-static", "Machine")
+[System.Environment]::SetEnvironmentVariable("VCPKG_DEFAULT_TRIPLET", "x64-windows-static", "Machine")
+
+# Reload environment variables
+Reload-Env
+
 cd $libdir
 git clone https://github.com/Kingtous/rustdesk_thirdpary_lib --depth=1  --quiet
 [System.Environment]::SetEnvironmentVariable("VCPKG_ROOT",(Join-Path ($libdir) ('rustdesk_thirdpary_lib\vcpkg')),"Machine");
-
-#LLVM
-echo "Install LLVM"
-$llvm_url = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/LLVM-15.0.6-win64.exe'
-Start-BitsTransfer -Source $llvm_url -Destination $download 
-$llvm_installerPath = Join-Path ($download) ([System.IO.Path]::GetFileName($llvm_url) );
-Start-Process $llvm_installerPath /S 
-[System.Environment]::SetEnvironmentVariable("LIBCLANG_PATH",'C:\Program Files\LLVM\bin',"Machine");
 
 #Flutter 
 echo "Install flutter"
@@ -99,14 +105,6 @@ $flutter_source = Join-Path ($download) ([System.IO.Path]::GetFileName($flutter_
 Expand-Archive -Path $flutter_source -DestinationPath $buildir -Force
 $flutter_dest = Join-Path ($buildir) ('flutter');
 Add-Path (Join-Path ($flutter_dest) ('bin'))
-
-# #Custom Flutter 
-# echo "Install flutter custom"
-# $rustdesk_flutter_url = 'https://github.com/Kingtous/engine/releases/download/v3.7.0-rustdesk/windows-x64-release-flutter.zip'
-# Start-BitsTransfer -Source $rustdesk_flutter_url -Destination $download 
-# $custom_flutter_source = Join-Path ($download) ([System.IO.Path]::GetFileName($rustdesk_flutter_url) );
-# $custom_flutter_dest = Join-Path ($buildir) ('flutter\bin\cache\artifacts\engine\windows-x64-release')
-# Expand-Archive -Path $custom_flutter_source -DestinationPath $custom_flutter_dest -Force
 
 #python
 echo "Install Python"
