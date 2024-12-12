@@ -4,7 +4,7 @@ $sciterUrl = 'https://raw.githubusercontent.com/c-smile/sciter-sdk/master/bin.wi
 
 $CARGO_NDK_VERSION = "3.1.2"
 $LLVM_VERSION= "15.0.6"
-$FLUTTER_VERSION= "3.19.5"
+$FLUTTER_VERSION= "3.19.6"
 $FLUTTER_RUST_BRIDGE_VERSION= "1.80.1"
 
 # Custom settings, re-open your window after setting the variables or run the script twice to build rustdesk with custom settings
