@@ -64,7 +64,7 @@ $env:VCPKG_ROOT = "C:\libs\vcpkg"
 
 # Build the application
 Write-Host "Building RustDesk..."
-python.exe build.py --portable --hwcodec --flutter --vram
+python.exe build.py --portable --flutter --vram
 
 # Only proceed with file operations if build succeeded
 if ($LASTEXITCODE -eq 0) {

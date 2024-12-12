@@ -64,8 +64,7 @@ $vcpkgPackages = @(
     "libvpx:x64-windows-static",
     "libyuv:x64-windows-static",
     "opus:x64-windows-static",
-    "ffmpeg[core,avcodec,avformat,swscale,swresample]:x64-windows-static",
-    "mediasdk:x64-windows-static"
+    "ffmpeg[core,avcodec,avformat,swscale,swresample]:x64-windows-static"
 )
 
 foreach ($package in $vcpkgPackages) {
