@@ -39,16 +39,27 @@ Write-Host "Installing Rust..."
 Invoke-WebRequest -Uri https://win.rustup.rs/x86_64 -OutFile "$download\rustup-init.exe"
 Start-Process -FilePath "$download\rustup-init.exe" -ArgumentList "-y" -Wait
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-rustup target add x86_64-pc-windows-msvc
-rustup component add clippy rustfmt
 
-# Install LLVM
-Write-Host "Installing LLVM..."
-winget install LLVM.LLVM
+# Set up Rust toolchain
+Write-Host "Setting up Rust toolchain..."
+rustup set profile minimal
+rustup default stable-msvc
+
+# Install specific components
+Write-Host "Installing Rust components..."
+rustup component add cargo
+rustup component add rust-std
+rustup component add rustc
+rustup component add rustfmt
+rustup target add x86_64-pc-windows-msvc
 
 # Install Visual Studio Build Tools
 Write-Host "Installing Visual Studio Build Tools..."
 winget install Microsoft.VisualStudio.2022.BuildTools --silent --override "--wait --quiet --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+
+# Install LLVM
+Write-Host "Installing LLVM..."
+winget install LLVM.LLVM
 
 #vcpkg
 echo "Install vcpkg"
@@ -113,9 +124,25 @@ echo "Install flutter"
 $flutter_url = 'https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.19.6-stable.zip'
 Start-BitsTransfer -Source $flutter_url -Destination $download 
 $flutter_source = Join-Path ($download) ([System.IO.Path]::GetFileName($flutter_url) );
-Expand-Archive -Path $flutter_source -DestinationPath $buildir -Force
 $flutter_dest = Join-Path ($buildir) ('flutter');
+Expand-Archive -Path $flutter_source -DestinationPath $buildir -Force
 Add-Path (Join-Path ($flutter_dest) ('bin'))
+
+# Set Flutter environment variables
+[System.Environment]::SetEnvironmentVariable("FLUTTER_ROOT", $flutter_dest, "Machine")
+[System.Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";" + (Join-Path $flutter_dest 'bin'), "Machine")
+
+# Initialize Flutter and install bridge
+Write-Host "Initializing Flutter..."
+flutter doctor
+flutter config --enable-windows-desktop
+
+# Install Flutter-Rust bridge generator
+Write-Host "Installing Flutter-Rust bridge..."
+cargo install flutter_rust_bridge_codegen --version 1.80.1
+
+# Reload environment variables
+Reload-Env
 
 #python
 echo "Install Python"
