@@ -56,9 +56,14 @@ Set-Location (Join-Path $rustdeskPath "flutter")
 flutter clean
 Remove-Item -Path ".dart_tool" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "build" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "lib/generated_bridge*" -Force -ErrorAction SilentlyContinue
 flutter pub cache clean
 flutter pub get
+
+# Run code generation
+Write-Host "Running code generation..."
 flutter pub run build_runner clean
+flutter pub run build_runner build --delete-conflicting-outputs
 
 # Install flutter_rust_bridge_codegen
 Write-Host "Installing flutter_rust_bridge_codegen..."
@@ -66,12 +71,11 @@ cargo install flutter_rust_bridge_codegen --version 1.80.1 --features "uuid" --f
 
 # Generate bridge code
 Write-Host "Generating bridge code..."
-Set-Location $rustdeskPath
-flutter_rust_bridge_codegen --rust-input src/flutter_ffi.rs --dart-output flutter/lib/generated_bridge.dart
+flutter_rust_bridge_codegen --rust-input ..\src\flutter_ffi.rs --dart-output .\lib\generated_bridge.dart
 
-# Run Flutter pub get again after bridge generation
-Set-Location (Join-Path $rustdeskPath "flutter")
+# Run Flutter pub get and code generation again after bridge generation
 flutter pub get
+flutter pub run build_runner build --delete-conflicting-outputs
 
 # Extract and copy WindowInjection.dll
 Write-Host "Extracting WindowInjection.dll..."
@@ -104,7 +108,25 @@ try {
 # Run build script
 Write-Host "Running build script..."
 $env:RUST_BACKTRACE = "full"
+$env:RUST_LOG = "debug"
 Set-Location $rustdeskPath
-python build.py --portable --hwcodec --flutter --vram
+python build.py --portable --flutter
 
-Write-Host "Build process completed!"
+# Copy debug DLLs
+Write-Host "Copying debug DLLs..."
+$debugDlls = @(
+    "vcruntime140.dll",
+    "vcruntime140_1.dll",
+    "msvcp140.dll"
+)
+
+foreach ($dll in $debugDlls) {
+    $sourcePath = "C:\Windows\System32\$dll"
+    if (Test-Path $sourcePath) {
+        Copy-Item -Path $sourcePath -Destination "$releasePath" -Force
+        Write-Host "Copied $dll"
+    }
+}
+
+Write-Host "Build process completed! The executable should be in: $releasePath"
+Write-Host "Try running the executable with: Start-Process '$releasePath\rustdesk.exe' -NoNewWindow -Wait"
