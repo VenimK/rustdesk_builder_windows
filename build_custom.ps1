@@ -40,14 +40,6 @@ if (-not (Test-Path $rustdeskPath)) {
 # Change to rustdesk directory
 Set-Location $rustdeskPath
 
-# Clean Flutter environment
-Write-Host "Cleaning Flutter environment..."
-flutter clean
-Remove-Item -Path (Join-Path $rustdeskPath "flutter\.dart_tool") -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path (Join-Path $rustdeskPath "flutter\build") -Recurse -Force -ErrorAction SilentlyContinue
-flutter pub cache clean
-flutter pub get
-
 # Install and configure Rust toolchain
 Write-Host "Installing and configuring Rust toolchain..."
 rustup toolchain install 1.75 --target x86_64-pc-windows-msvc --component rustfmt --profile minimal --no-self-update
@@ -58,6 +50,16 @@ Write-Host "Rust version information:"
 rustc +1.75 --version --verbose
 rustup show
 
+# Clean and prepare Flutter environment
+Write-Host "Preparing Flutter environment..."
+Set-Location (Join-Path $rustdeskPath "flutter")
+flutter clean
+Remove-Item -Path ".dart_tool" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "build" -Recurse -Force -ErrorAction SilentlyContinue
+flutter pub cache clean
+flutter pub get
+flutter pub run build_runner clean
+
 # Install flutter_rust_bridge_codegen
 Write-Host "Installing flutter_rust_bridge_codegen..."
 cargo install flutter_rust_bridge_codegen --version 1.80.1 --features "uuid" --force --locked
@@ -66,6 +68,10 @@ cargo install flutter_rust_bridge_codegen --version 1.80.1 --features "uuid" --f
 Write-Host "Generating bridge code..."
 Set-Location $rustdeskPath
 flutter_rust_bridge_codegen --rust-input src/flutter_ffi.rs --dart-output flutter/lib/generated_bridge.dart
+
+# Run Flutter pub get again after bridge generation
+Set-Location (Join-Path $rustdeskPath "flutter")
+flutter pub get
 
 # Extract and copy WindowInjection.dll
 Write-Host "Extracting WindowInjection.dll..."
@@ -99,6 +105,6 @@ try {
 Write-Host "Running build script..."
 $env:RUST_BACKTRACE = "full"
 Set-Location $rustdeskPath
-python build.py --portable --hwcodec --flutter --vram --virtual-display
+python build.py --portable --hwcodec --flutter --vram
 
 Write-Host "Build process completed!"
