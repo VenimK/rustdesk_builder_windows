@@ -82,6 +82,31 @@ The scripts use the following directory structure:
 - `C:\buildrustdesk`: Main build directory
 - `C:\libs`: Directory for additional libraries
 
+## Build Options
+
+### Using build_custom.ps1 (Recommended)
+```powershell
+# Run the custom build script
+.\build_custom.ps1
+```
+
+This script handles:
+- Automatic memory optimization
+- Directory creation and cleanup
+- Flutter environment preparation
+- Proper DLL management
+- Streamlined build process
+
+The custom build script is recommended as it includes additional optimizations and error handling.
+
+### Using build.ps1 (Legacy)
+```powershell
+# Run the original build script
+.\build.ps1
+```
+
+Note: The original build.ps1 is maintained for legacy purposes. For new builds, please use build_custom.ps1.
+
 ## Troubleshooting
 
 1. **Environment Variables**: If you encounter path-related issues, ensure you've reopened PowerShell after running `tools.ps1`.
