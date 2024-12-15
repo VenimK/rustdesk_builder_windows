@@ -93,6 +93,92 @@ The scripts use the following directory structure:
 
 3. **Winget Issues**: For winget-related problems, refer to the [Winget Troubleshooting Guide](https://github.com/microsoft/winget-cli/blob/d68a1a69346e7ca16a5d07eef38a2c93172eb991/doc/troubleshooting/README.md#executing-winget-doesnt-display-help).
 
+## Build Instructions (English)
+
+### Prerequisites
+- Windows OS
+- PowerShell
+- Visual Studio Build Tools 2022
+- LLVM
+- Python
+- Git
+- Flutter SDK
+- Rust toolchain
+
+### Build Steps
+1. **Environment Setup**
+   - Sets environment variables for LIBCLANG_PATH
+   - Configures memory limits for Dart VM and Node.js
+   - Sets up Rust backtrace for debugging
+
+2. **Directory Preparation**
+   - Creates download directory at C:\download
+   - Creates build directory at C:\buildrustdesk
+   - Clones RustDesk repository if not present
+
+3. **Flutter Environment**
+   - Cleans Flutter environment
+   - Removes temporary files and caches
+   - Runs pub get to fetch dependencies
+   - Generates necessary code using build_runner
+
+4. **Bridge Generation**
+   - Installs flutter_rust_bridge_codegen
+   - Generates bridge code between Rust and Flutter
+   - Rebuilds after bridge generation
+
+5. **DLL Setup**
+   - Extracts WindowInjection.dll from local zip file
+   - Copies DLL to the release directory
+
+6. **Build Process**
+   - Runs the Python build script with portable and Flutter options
+   - Copies necessary runtime DLLs
+   - Creates final executable in release directory
+
+## Bouwinstructies (Nederlands)
+
+### Vereisten
+- Windows besturingssysteem
+- PowerShell
+- Visual Studio Build Tools 2022
+- LLVM
+- Python
+- Git
+- Flutter SDK
+- Rust toolchain
+
+### Bouwstappen
+1. **Omgeving Instellen**
+   - Stelt omgevingsvariabelen in voor LIBCLANG_PATH
+   - Configureert geheugenlimieten voor Dart VM en Node.js
+   - Stelt Rust backtrace in voor debugging
+
+2. **Directory Voorbereiding**
+   - Maakt download directory aan op C:\download
+   - Maakt build directory aan op C:\buildrustdesk
+   - Kloont RustDesk repository indien niet aanwezig
+
+3. **Flutter Omgeving**
+   - Schoont Flutter omgeving op
+   - Verwijdert tijdelijke bestanden en caches
+   - Voert pub get uit om afhankelijkheden op te halen
+   - Genereert benodigde code met build_runner
+
+4. **Bridge Generatie**
+   - Installeert flutter_rust_bridge_codegen
+   - Genereert bridge code tussen Rust en Flutter
+   - Herbouwt na bridge generatie
+
+5. **DLL Configuratie**
+   - Pakt WindowInjection.dll uit van lokaal zip bestand
+   - Kopieert DLL naar de release directory
+
+6. **Bouwproces**
+   - Voert het Python bouwscript uit met portable en Flutter opties
+   - Kopieert benodigde runtime DLLs
+   - Maakt definitieve executable in release directory
+
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
