@@ -27,7 +27,7 @@ Before you begin, ensure you have the following installed on your system:
   - Flutter (v3.19.6)
   - Python (v3.11.4)
 
-- **`build.ps1`**: This script handles the actual building process with the following configurations:
+- **`build_custom.ps1`**: This script handles the actual building process with the following configurations:
   - Flutter version: 3.19.6
   - Flutter Rust Bridge version: 1.80.1
   - Support for both RustDesk 1.2.X and 1.3.X build formats
@@ -47,13 +47,13 @@ Before you begin, ensure you have the following installed on your system:
 
 ### Step 2: Build the RustDesk Installer
 
-1. **Run `build.ps1`**:
+1. **Run `build_custom.ps1`**:
    ```powershell
-   .\build.ps1
+   .\build_custom.ps1
    ```
 
 2. **Custom Settings** (Optional):
-   - To use custom settings, uncomment and modify these lines in `build.ps1`:
+   - To use custom settings, uncomment and modify these lines in `build_custom.ps1`:
      ```powershell
      # [System.Environment]::SetEnvironmentVariable('RS_PUB_KEY','<<key>>',"Machine");
      # [System.Environment]::SetEnvironmentVariable('RENDEZVOUS_SERVER','<<yourownserver>>',"Machine");
@@ -84,28 +84,22 @@ The scripts use the following directory structure:
 
 ## Build Options
 
-### Using build_custom.ps1 (Recommended)
+### Using build_custom.ps1
 ```powershell
-# Run the custom build script
+# Run the build script
 .\build_custom.ps1
 ```
 
-This script handles:
+This script provides a complete build solution with:
 - Automatic memory optimization
 - Directory creation and cleanup
 - Flutter environment preparation
 - Proper DLL management
 - Streamlined build process
+- Enhanced error handling
+- Comprehensive logging
 
-The custom build script is recommended as it includes additional optimizations and error handling.
-
-### Using build.ps1 (Legacy)
-```powershell
-# Run the original build script
-.\build.ps1
-```
-
-Note: The original build.ps1 is maintained for legacy purposes. For new builds, please use build_custom.ps1.
+The script will guide you through the entire build process, handling all necessary setup and configuration automatically.
 
 ## Troubleshooting
 
