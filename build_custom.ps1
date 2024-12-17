@@ -58,24 +58,22 @@ Remove-Item -Path ".dart_tool" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "build" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "lib/generated_bridge*" -Force -ErrorAction SilentlyContinue
 flutter pub cache clean
-flutter pub get
 
-# Run code generation
-Write-Host "Running code generation..."
-flutter pub run build_runner clean
-flutter pub run build_runner build --delete-conflicting-outputs
 
 # Install flutter_rust_bridge_codegen
 Write-Host "Installing flutter_rust_bridge_codegen..."
 cargo install flutter_rust_bridge_codegen --version 1.80.1 --features "uuid" --force --locked
 
+# Run Flutter pub get and code generation again after bridge generation
+Push-Location flutter
+flutter pub get
+Pop-Location
+
 # Generate bridge code
 Write-Host "Generating bridge code..."
 flutter_rust_bridge_codegen --rust-input ..\src\flutter_ffi.rs --dart-output .\lib\generated_bridge.dart
 
-# Run Flutter pub get and code generation again after bridge generation
-flutter pub get
-flutter pub run build_runner build --delete-conflicting-outputs
+
 
 # Extract and copy WindowInjection.dll
 Write-Host "Extracting WindowInjection.dll..."

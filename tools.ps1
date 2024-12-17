@@ -3,6 +3,7 @@
 $download = 'C:\download'
 $buildir = 'C:\buildrustdesk'
 $libdir = 'C:\libs'
+$rustdeskPath = Join-Path $buildir "rustdesk"
 
 function Add-Path($Path) {
     $Path = [Environment]::GetEnvironmentVariable("PATH", "Machine") + [IO.Path]::PathSeparator + $Path
@@ -94,26 +95,60 @@ if (-not $vsInstalled) {
     winget install Microsoft.VisualStudio.2022.BuildTools --silent --override "--wait --quiet --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
 }
 
-# Install LLVM
-Write-Host "Checking LLVM installation..."
-$llvmInstalled = $null
-try {
-    $llvmVersion = (clang --version) 2>&1
-    if ($llvmVersion -match "clang version (\d+\.\d+\.\d+)") {
-        $installedVersion = $Matches[1]
-        $requiredVersion = "15.0.6"
-        if ([Version]$installedVersion -ge [Version]$requiredVersion) {
-            Write-Host "LLVM $installedVersion is already installed and meets minimum version requirement ($requiredVersion)"
-            $llvmInstalled = $true
-        }
-    }
-} catch {
-    Write-Host "LLVM not found"
+# Install LLVM 15.0.6
+Write-Host "Installing LLVM..."
+$llvmVersion = "15.0.6"
+$llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
+$llvmInstaller = Join-Path $download "LLVM-$llvmVersion-win64.exe"
+
+if (-not (Test-Path "C:\Program Files\LLVM\bin\clang.exe")) {
+    Write-Host "Downloading LLVM..."
+    Invoke-WebRequest -Uri $llvmUrl -OutFile $llvmInstaller
+    Write-Host "Installing LLVM..."
+    Start-Process -FilePath $llvmInstaller -Args "/S" -Wait
+    Remove-Item $llvmInstaller
 }
 
-if (-not $llvmInstalled) {
-    Write-Host "Installing LLVM..."
-    winget install LLVM.LLVM
+# Add LLVM to PATH
+$llvmPath = "C:\Program Files\LLVM\bin"
+if (-not $env:Path.Contains($llvmPath)) {
+    $env:Path = "$llvmPath;$env:Path"
+}
+$env:LIBCLANG_PATH = $llvmPath
+
+# Install vcpkg
+Write-Host "Installing vcpkg..."
+$vcpkgPath = "C:\vcpkg"
+if (-not (Test-Path $vcpkgPath)) {
+    git clone https://github.com/Microsoft/vcpkg.git $vcpkgPath
+    Push-Location $vcpkgPath
+    git checkout b2cb0da531c2f1f740045bfe7c4dac59f0b2b69c
+    .\bootstrap-vcpkg.bat
+    Pop-Location
+}
+
+# Add vcpkg to PATH
+if (-not $env:Path.Contains($vcpkgPath)) {
+    $env:Path = "$vcpkgPath;$env:Path"
+}
+
+# Install vcpkg dependencies
+Write-Host "Installing vcpkg dependencies..."
+$vcpkgTriplet = "x64-windows-static"
+vcpkg install --triplet $vcpkgTriplet
+
+# Setup Flutter engine
+Write-Host "Setting up Flutter engine..."
+$flutterEnginePath = Join-Path $download "windows-x64-release.zip"
+if (-not (Test-Path $flutterEnginePath)) {
+    Invoke-WebRequest -Uri "https://github.com/rustdesk/engine/releases/download/main/windows-x64-release.zip" -OutFile $flutterEnginePath
+    $engineExtractPath = Join-Path $download "windows-x64-release"
+    Expand-Archive -Path $flutterEnginePath -DestinationPath $engineExtractPath
+    $flutterCachePath = "C:/hostedtoolcache/windows/flutter/stable-3.24.5-x64/bin/cache/artifacts/engine/windows-x64-release"
+    if (-not (Test-Path $flutterCachePath)) {
+        New-Item -ItemType Directory -Force -Path $flutterCachePath
+    }
+    Get-ChildItem -Path $engineExtractPath | Copy-Item -Destination $flutterCachePath -Recurse -Force
 }
 
 # Install additional build tools
@@ -214,27 +249,71 @@ if (Test-Path "rustdesk_thirdpary_lib") {
 
 #Flutter 
 echo "Install flutter"
-$flutter_url = 'https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.24.4-stable.zip'
+
+# Remove old Flutter installation if it exists
+$oldFlutterPath = Join-Path $buildir "flutter"
+if (Test-Path $oldFlutterPath) {
+    Write-Host "Removing old Flutter installation..."
+    Remove-Item -Path $oldFlutterPath -Recurse -Force
+}
+
+# Clean up PATH from old Flutter references
+$currentPath = [Environment]::GetEnvironmentVariable("PATH", "Machine")
+$pathElements = $currentPath -split ';' | Where-Object { $_ -notlike "*$buildir\flutter*" }
+$newPath = $pathElements -join ';'
+[Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+
+# Install new Flutter
+$flutter_url = 'https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.24.5-stable.zip'
 Start-BitsTransfer -Source $flutter_url -Destination $download 
-$flutter_source = Join-Path ($download) ([System.IO.Path]::GetFileName($flutter_url) );
-$flutter_dest = Join-Path ($buildir) ('flutter');
-Expand-Archive -Path $flutter_source -DestinationPath $buildir -Force
-Add-Path (Join-Path ($flutter_dest) ('bin'))
+$flutter_source = Join-Path $download ([System.IO.Path]::GetFileName($flutter_url))
+$flutter_dest = Join-Path $libdir 'flutter'
+
+# Remove existing Flutter in libs if it exists
+if (Test-Path $flutter_dest) {
+    Write-Host "Removing existing Flutter in libs..."
+    Remove-Item -Path $flutter_dest -Recurse -Force
+}
+
+Expand-Archive -Path $flutter_source -DestinationPath $libdir -Force
+
+# Update PATH with new Flutter location
+$flutterBinPath = Join-Path $flutter_dest 'bin'
+Add-Path $flutterBinPath
 
 # Set Flutter environment variables
-[System.Environment]::SetEnvironmentVariable("FLUTTER_ROOT", $flutter_dest, "Machine")
-[System.Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";" + (Join-Path $flutter_dest 'bin'), "Machine")
+[Environment]::SetEnvironmentVariable("FLUTTER_ROOT", $flutter_dest, "Machine")
+
+# Reload PATH to ensure we're using the correct Flutter
+Reload-Env
 
 # Initialize Flutter and install bridge
 Write-Host "Initializing Flutter..."
-flutter doctor
-flutter config --enable-windows-desktop
+Push-Location $flutter_dest
+& .\bin\flutter.bat precache
+& .\bin\flutter.bat doctor
+Pop-Location
 
-# Modify pubspec.yaml
+# Clone RustDesk repository if it doesn't exist
+if (-not (Test-Path $rustdeskPath)) {
+    Write-Host "Cloning RustDesk repository..."
+    Push-Location $buildir
+    git clone https://github.com/rustdesk/rustdesk.git
+    Pop-Location
+}
+
+# Move to rustdesk flutter directory for pubspec.yaml modifications
 Write-Host "Modifying pubspec.yaml..."
-$content = Get-Content "flutter/pubspec.yaml" -Raw
-$content = $content -replace 'extended_text: 14.0.0', 'extended_text: 13.0.0'
-Set-Content "flutter/pubspec.yaml" $content
+$pubspecPath = Join-Path $rustdeskPath "flutter\pubspec.yaml"
+if (Test-Path $pubspecPath) {
+    $content = Get-Content $pubspecPath -Raw
+    $content = $content -replace "flutter_rust_bridge:.*", "flutter_rust_bridge: ^1.80.1"
+    Set-Content $pubspecPath $content
+    Write-Host "Updated pubspec.yaml with flutter_rust_bridge version 1.80.1"
+} else {
+    Write-Host "Error: pubspec.yaml not found at: $pubspecPath"
+    exit 1
+}
 
 # Install Flutter-Rust bridge generator
 Write-Host "Installing Flutter-Rust bridge..."
