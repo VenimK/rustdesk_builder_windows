@@ -50,6 +50,54 @@ Write-Host "Rust version information:"
 rustc +1.75 --version --verbose
 rustup show
 
+# Check vcpkg dependencies
+$vcpkgPath = "C:\libs\vcpkg\vcpkg.exe"
+$installRoot = "C:\libs\vcpkg\installed"
+
+if (!(Test-Path $vcpkgPath)) {
+    Write-Host "Error: vcpkg executable not found at $vcpkgPath"
+    exit 1
+}
+
+# List of packages to check
+$packagesToCheck = @(
+    "openssl",
+    "libvpx",
+    "libyuv",
+    "opus"
+    # Add other specific packages RustDesk might need
+)
+
+$needsInstall = $false
+
+foreach ($package in $packagesToCheck) {
+    $packagePath = Join-Path $installRoot "x64-windows-static\include\$package"
+    if (!(Test-Path $packagePath)) {
+        Write-Host "Package $package is missing. Needs installation."
+        $needsInstall = $true
+        break
+    }
+}
+
+if ($needsInstall) {
+    Write-Host "Installing vcpkg dependencies..."
+    & $vcpkgPath install --triplet x64-windows-static --x-install-root="$installRoot"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "vcpkg installation failed. Checking log files..."
+        Get-ChildItem -Path "C:\libs\vcpkg" -Recurse -Filter "*.log" | ForEach-Object {
+            Write-Host "Log file: $($_.FullName)"
+            Write-Host "======"
+            Get-Content $_.FullName
+            Write-Host "======"
+            Write-Host ""
+        }
+        exit 1
+    }
+} else {
+    Write-Host "All required vcpkg packages are already installed."
+}
+
 # Clean and prepare Flutter environment
 Write-Host "Preparing Flutter environment..."
 Set-Location (Join-Path $rustdeskPath "flutter")
@@ -64,8 +112,7 @@ flutter pub cache clean
 Write-Host "Installing flutter_rust_bridge_codegen..."
 cargo install flutter_rust_bridge_codegen --version 1.80.1 --features "uuid" --force --locked
 
-# Run Flutter pub get and code generation again after bridge generation
-Push-Location flutter
+Push-Location "C:\buildrustdesk\rustdesk\flutter"
 flutter pub get
 Pop-Location
 
